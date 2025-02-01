@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GShop - Premium Groceries</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Stick&display=swap');
+
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #81C784;
+            --background: #F5F5F6;
+            --text: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1rem 5%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), #66BB6A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: "Stick", serif;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .cart-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            height: 80vh;
+            background: linear-gradient(45deg, rgba(46, 125, 50, 0.9), rgba(129, 199, 132, 0.9)),
+                url('https://images.unsplash.com/photo-1542838132-92c53300491e');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            animation: slideIn 1s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Products Grid */
+        .products {
+            padding: 4rem 5%;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--background);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .add-to-cart {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .add-to-cart:hover {
+            background: #1B5E20;
+        }
+
+        /* Modal (Cart) Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Скрыто по умолчанию */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            height: 80vh;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .cart-items {
+            margin-top: 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .cart-item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .cart-item-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .cart-item-remove:hover {
+            color: #cc0000;
+        }
+
+        .cart-total {
+            text-align: right;
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary);
+            color: white;
+            padding: 4rem 5%;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-family: "Stick", serif;
+
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            line-height: 2;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+        .about {
+  padding: 4rem 5%;
+  background: white;
+  color: var(--text);
+}
+
+.about-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+.about p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.about-team {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.about-image {
+  width: 300px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.about-text {
+  max-width: 400px;
+  text-align: left;
+}
+
+.about-text h3 {
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
+  color: var(--primary);
+}
+
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                display: none;
+            }
+
+            .burger {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .cart-item {
+                flex-direction: column;
+            }
+
+            .cart-item-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Талды Суу</div>
+        <nav class="nav">
+            <a href="#home" class="nav-link">Главная</a>
+            <a href="#products" class="nav-link">Продукты</a>
+            <a href="#about" class="nav-link">О нас</a>
+            <button class="cart-btn" onclick="showCart()">
+                <i class="fas fa-shopping-cart fa-lg"></i>
+                <span class="cart-count">0</span>
+            </button>
+        </nav>
+        <div class="burger">
+            <i class="fas fa-bars"></i>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="home">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 style="font-size: 3rem; margin-bottom: 1rem;">Свежие органические продукты</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 2rem;">Доставка фермерских продуктов прямо к вашему дому</p>
+                <button class="add-to-cart" onclick="scrollToProducts()">Смотреть каталог</button>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section class="products" id="products">
+            <h2 style="font-size: 2rem; margin-bottom: 2rem;">Наши продукты</h2>
+            <div class="products-grid">
+                <!-- Продукты будут добавлены через JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Модальное окно для Корзины -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="hideCart()">&times;</button>
+            <h2 style="margin-bottom: 1rem;">Ваша корзина</h2>
+            <div class="cart-items">
+                <div class="cart-items-list">
+                    <!-- Элементы корзины будут добавлены через JS -->
+                </div>
+                <div class="cart-total">
+                    Общая сумма: <span id="total-price">0</span> руб.
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="about" id="about">
+        <div class="about-container">
+            <h2>О нас</h2>
+            <p>
+                Мы — команда профессионалов, стремящихся предоставить свежие и органические продукты высокого качества.
+                Наши фермеры и партнёры работают с любовью к природе, чтобы доставить вам лучшее.
+            </p>
+            <p>
+                Наша миссия — сделать здоровое питание доступным для всех, поддерживая устойчивое развитие и
+                экологически чистое производство.
+            </p>
+            <div class="about-team">
+                <img src="https://data.kaktus.media/image/big/2022-09-26_21-46-54_928131.jpg" alt="Наша команда" class="about-image">
+                <div class="about-text">
+                    <h3>Наша команда</h3>
+                    <p>
+                        Мы гордимся нашим дружным коллективом, объединяющим опыт и страсть к тому, что мы делаем.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Талды Суу</h3>
+                <p>Свежие продукты премиум качества</p>
+            </div>
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <ul class="footer-links">
+                    <li><a href="#">+996 779 145 523</a></li>
+                    <li><a href="#">taldysuu.com</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Соцсети</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">VKontakte</a></li>
+                    <li><a href="#">Telegram</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Данные продуктов
+        const products = [
+            { id: 1, name: 'Органические яблоки', price: 450, image: './img/apples.png' },
+            { id: 2, name: 'Авокадо Хасс', price: 200, image: './img/avakado.png' },
+            { id: 3, name: 'Натуральный мед', price: 890, image: 'https://img.freepik.com/premium-photo/sweet-bee-honey_200402-11404.jpg?w=360' },
+            { id: 4, name: 'Свежая руккола', price: 350, image: 'https://img.freepik.com/free-photo/flat-lay-fresh-salad-dark-plate_23-2148537187.jpg?t=st=1738404571~exp=1738408171~hmac=b70557ea74b4f2ff8ccf2d548501e06694071ef31174221b879c06ef84cb6ad0&w=360' },
+            { id: 5, name: 'Органические яйца', price: 280, image: 'https://img.freepik.com/free-psd/raw-eggs-arrangement_23-2151864146.jpg?t=st=1738404608~exp=1738408208~hmac=db45ddf650be54f136ae3ceb85c180847ebf62750a5a2208c1f3c9768d6bc159&w=826' },
+            { id: 6, name: 'Фермерский сыр', price: 650, image: 'https://img.freepik.com/free-photo/side-view-different-kind-cheese-white-table_141793-8646.jpg?t=st=1738404648~exp=1738408248~hmac=e504473b18854cf9ad9a2328eabc6108316dc80d597fc4d8f08a1692963dd99f&w=360' },
+        ];
+
+        // Инициализация корзины из localStorage или пустой массив
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCount = document.querySelector('.cart-count');
+        const productsGrid = document.querySelector('.products-grid');
+        const cartItemsList = document.querySelector('.cart-items-list');
+
+        // Инициализация приложения
+        function init() {
+            renderProducts();
+            updateCartCount();
+            renderCartItems();
+        }
+
+        // Отрисовка продуктов
+        function renderProducts() {
+            productsGrid.innerHTML = products.map(product => `
+        <div class="product-card">
+          <img src="${product.image}" class="product-image" alt="${product.name}">
+          <div class="product-info">
+            <h3 class="product-title">${product.name}</h3>
+            <p class="product-price">${product.price} руб.</p>
+            <button class="add-to-cart" onclick="addToCart(${product.id})">
+              Добавить в корзину
+            </button>
+          </div>
+        </div>
+      `).join('');
+        }
+
+        // Функция добавления товара в корзину
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            cart.push(product);
+            updateCart();
+            showCartNotification(`${product.name} добавлен в корзину`);
+        }
+
+        // Удаление товара из корзины
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        // Обновление данных корзины
+        function updateCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            renderCartItems();
+        }
+
+        // Обновление количества товаров в корзине
+        function updateCartCount() {
+            cartCount.textContent = cart.length;
+        }
+
+        // Отрисовка товаров в корзине
+        function renderCartItems() {
+            cartItemsList.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <img src="${item.image}" class="cart-item-image" alt="${item.name}">
+          <div class="cart-item-details">
+            <h4 class="cart-item-title">${item.name}</h4>
+            <p class="cart-item-price">${item.price} руб.</p>
+            <button class="cart-item-remove" onclick="removeFromCart(${index})">
+              Удалить
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+            document.getElementById('total-price').textContent =
+                cart.reduce((sum, item) => sum + item.price, 0);
+        }
+
+        // Открытие модального окна корзины
+        function showCart() {
+            document.getElementById('cart-modal').style.display = 'flex';
+        }
+
+        // Закрытие модального окна корзины
+        function hideCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        // Уведомление о добавлении в корзину
+        function showCartNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'cart-notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Прокрутка до каталога продуктов
+        function scrollToProducts() {
+            document.getElementById('products').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Инициализация приложения
+        init();
+    </script>
+</body>
+
+</html>
